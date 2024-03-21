@@ -1,71 +1,56 @@
-import { useState } from 'react'
-import { Button } from './components/ui/button'
-import { ComboboxDemo } from './components/menu/ComboboxDemo'
+import React, { useState } from 'react';
 import { MdOutlineDashboard } from "react-icons/md";
 import { GiWorld } from "react-icons/gi";
 import { CiFilter } from "react-icons/ci";
 import { BsArrowRight } from "react-icons/bs";
-
 import Papa from 'papaparse';
-
-
-
-
+import { MenuDropdown } from './components/menu/MenuDropdown';
+import { Cssgrid } from './components/menu/Cssgrid';
+import { Maps } from './components/menu/Maps';
+import Dashboardrecup from './components/Dashboardrecup';
 
 function App() {
-
   const [open, setOpen] = useState(false);
-  const [data, setData] = useState([]);
-  
-  const  Changer= () =>{
-    setOpen(!open)
+  const [currentPage, setCurrentPage] = useState('cssgrid');
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+
+  const handleChange = () => {
+    setOpen(!open);
   }
 
-  
-
-
-   
-
-
-  
-  
-
   return (
-    <>
-      <div className='flex'>
-        <div className="bg-gray-700	h-screen p-5 pt-8  w-20 z-20">
-          {/* <button className='text-center bg-red-700 w-14 rounded' onClick={Changer}>Menu</button> */}
-          <div className='flex flex-col'>
-            <BsArrowRight className='bg-white text-4xl rounded mb-20' onClick={Changer}/>
-            <MdOutlineDashboard className='bg-white text-4xl rounded mb-20'/>
-            <GiWorld className='bg-white text-4xl rounded mb-20'/>
-            <CiFilter className='bg-white text-4xl rounded'/>
+    <div className='flex'> {/* Ensure your outer div uses flex layout */}
+      <div className={`bg-gray-700 h-screen p-5 pt-4 ${isSidebarExpanded ? "w-32" : "w-18"} z-20`}>
+        <div className='flex flex-col'>
+          <div className='mb-20'>
+            <BsArrowRight className={`bg-white text-2xl rounded mb-4 ${!isSidebarExpanded && "rotate-180"}`} onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}/>
+            <p hidden={!isSidebarExpanded} className='text-slate-300' >Close</p>
           </div>
-
-          
-        </div>
-        <Menuderoulant hidden= {!open}/>
-        <div className='p-2 w-full'>
-            <h1 className='text-2xl font-semibold'>Dashbord</h1>
+          <div className='mb-20'>
+            <MdOutlineDashboard className='bg-white text-2xl rounded mb-4' onClick={() => setCurrentPage('cssgrid')}/>
+            <p hidden={!isSidebarExpanded} className='text-slate-300' >Dashboard</p>
+          </div>
+          <div className='mb-20'>
+            <GiWorld className='bg-white text-2xl rounded mb-4' onClick={() => setCurrentPage('maps')}/>
+            <p hidden={!isSidebarExpanded} className='text-slate-300' >Maps</p>
+          </div>
+          <div className='mb-20'>
+            <CiFilter className='bg-white text-2xl rounded mb-4' onClick={handleChange}/>
+            <p hidden={!isSidebarExpanded}  className='text-slate-300'>Filter</p>
+          </div>
         </div>
       </div>
-    </>
-  )
-}
+      <MenuDropdown hidden={!open}/>
+      <div className='flex-grow h-screen overflow-auto'>
+        {currentPage === 'cssgrid' ? <Cssgrid /> : <Maps />}
 
-function Menuderoulant({hidden}){
-  const translateClasses = hidden ? "-translate-x-full" : "translate-x-0";
+        <Dashboardrecup/>
 
-  return (
-    <div className='flex '>
-      <div hidden= {hidden} className='bg-zinc-300	h-screen p-5 pt-8 w-76 transition-transform duration-700 ease-in-out '>
-        <h1>filtre</h1>
-        <ComboboxDemo/>
+
       </div>
-
-    
+      
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

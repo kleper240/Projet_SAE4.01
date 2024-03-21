@@ -18,28 +18,91 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
+
 const frameworks = [
   {
-    value: "next.js",
-    label: "Next.js",
+    value: "paris",
+    label: "paris",
   },
   {
-    value: "sveltekit",
-    label: "SvelteKit",
+    value: "marseille",
+    label: "marseille",
   },
   {
-    value: "nuxt.js",
-    label: "Nuxt.js",
+    value: "lyon",
+    label: "lyon",
   },
   {
-    value: "remix",
-    label: "Remix",
+    value: "toulouse",
+    label: "toulouse",
   },
   {
-    value: "astro",
-    label: "Astro",
+    value: "nice",
+    label: "nice",
   },
-]
+  {
+    value: "nantes",
+    label: "nantes",
+  },
+  {
+    value: "strasbourg",
+    label: "strasbourg",
+  },
+  {
+    value: "montpellier",
+    label: "montpellier",
+  },
+  {
+    value: "bordeaux",
+    label: "bordeaux",
+  },
+  {
+    value: "lille",
+    label: "lille",
+  },
+  {
+    value: "rennes",
+    label: "rennes",
+  },
+  {
+    value: "reims",
+    label: "reims",
+  },
+  {
+    value: "le havre",
+    label: "le havre",
+  },
+  {
+    value: "saint-étienne",
+    label: "saint-étienne",
+  },
+  {
+    value: "toulon",
+    label: "toulon",
+  },
+  {
+    value: "grenoble",
+    label: "grenoble",
+  },
+  {
+    value: "dijon",
+    label: "dijon",
+  },
+  {
+    value: "angers",
+    label: "angers",
+  },
+  {
+    value: "nîmes",
+    label: "nîmes",
+  },
+  {
+    value: "villeurbanne",
+    label: "villeurbanne",
+  },
+];
+
+
 
 export function ComboboxDemo() {
   const [open, setOpen] = React.useState(false)
@@ -52,18 +115,18 @@ export function ComboboxDemo() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-[250px] justify-between"
         >
           {value
             ? frameworks.find((framework) => framework.value === value)?.label
-            : "Select framework..."}
+            : "Selectionner votre ville ..."}
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
         <Command>
           <CommandInput placeholder="Search framework..." className="h-9" />
-          <CommandEmpty>No framework found.</CommandEmpty>
+          <CommandEmpty>la ville n'est disponible</CommandEmpty>
           <CommandGroup>
             {frameworks.map((framework) => (
               <CommandItem
