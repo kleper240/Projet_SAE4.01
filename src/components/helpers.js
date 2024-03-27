@@ -124,10 +124,6 @@ const transformDataByOrganisme = (data, organisme) => {
 
 
 
-
-
-
-
 const calculateAverageFromTransformedData = (transformedData) => {
     // Flatten the data
     const flattenedData = transformedData.flatMap(item => 
