@@ -6,6 +6,10 @@ import { ResponsiveContainer } from 'recharts';
 import { ScatterChart, Scatter } from 'recharts';
 import { getMaxValue, transformData, formatDate, csvToJson } from './helpers';
 // import coord from './coord.csv';
+import {Cell} from 'recharts';
+import { PureComponent } from 'react';
+import {ComposedChart} from 'recharts';
+
 
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -362,6 +366,124 @@ const Dashboardrecup = () => {
         );
     };
 
+    const MyBiaxalBarChart = () => {
+        // Filtrer les données pour le premier polluant sélectionné et le site sélectionné
+        const filteredData = data.filter(item => item.Polluant === selectedPollutant && item['nom site'] === selectedSite);
+        const filteredData2 = data.filter(item => item.Polluant === selectedSecondPollutant && item['nom site'] === selectedSecondSite);
+    
+        // Création du tableau de données à afficher dans le graphique
+        const dataToDisplay = Array.from({ length: 24 }, (_, index) => ({
+            name: (filteredData[index] && filteredData[index]['Date de début']) || "Unknown Date",
+            [selectedPollutant]: filteredData[index] ? filteredData[index].valeur : 0,
+            [selectedSecondPollutant]: filteredData2[index] ? filteredData2[index].valeur : 0
+        }));
+    
+        return (
+            <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={dataToDisplay}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
+                    <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
+                    <Tooltip />
+                    <Legend />
+                    <Bar yAxisId="left" dataKey={selectedPollutant} fill="#8884d8" name={selectedPollutant} />
+                    <Bar yAxisId="right" dataKey={selectedSecondPollutant} fill="#82ca9d" name={selectedSecondPollutant} />
+                </BarChart>
+            </ResponsiveContainer>
+        );
+    };
+    
+
+    
+    
+
+    const MyStackedAreaChart = () => {
+        // Filtrer les données pour le premier polluant sélectionné et le site sélectionné
+        const filteredData = data.filter(item => item.Polluant === selectedPollutant && item['nom site'] === selectedSite);
+        const filteredData2 = data.filter(item => item.Polluant === selectedSecondPollutant && item['nom site'] === selectedSecondSite);
+    
+        // Création du tableau de données à afficher dans le graphique
+        const dataToDisplay = Array.from({ length: 24 }, (_, index) => ({
+            name: (filteredData[index] && filteredData[index]['Date de début']) || "Unknown Date",
+            [selectedPollutant]: filteredData.length > index ? filteredData[index].valeur : 0,
+            [selectedSecondPollutant]: filteredData2.length > index ? filteredData2[index].valeur : 0
+        }));
+    
+        return (
+            <ResponsiveContainer width="100%" height={400}>
+                <AreaChart
+                    width={500}
+                    height={400}
+                    data={dataToDisplay}
+                    margin={{
+                        top: 10,
+                        right: 30,
+                        left: 0,
+                        bottom: 0,
+                    }}
+                >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Area type="monotone" dataKey={selectedPollutant} stackId="1" stroke="#8884d8" fill="#8884d8" />
+                    <Area type="monotone" dataKey={selectedSecondPollutant} stackId="1" stroke="#82ca9d" fill="#82ca9d" />
+                </AreaChart>
+            </ResponsiveContainer>
+        );
+    };
+    
+
+    // const MyStackedAreaChart = ({ data, selectedPollutant, selectedSecondPollutant }) => {
+    //     if (!data || data.length === 0) {
+    //         return <p>Data is loading...</p>; // Display a loading message or a spinner
+    //     }
+    
+    //     // Helper function to parse week number
+    //     const getWeekNumber = (date) => {
+    //         const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+    //         const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+    //         return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+    //     };
+    
+    //     // Function to group data by weeks
+    //     const groupDataByWeek = (data) => {
+    //         return data.reduce((acc, item) => {
+    //             const date = new Date(item['Date de début']);
+    //             const weekNum = getWeekNumber(date);
+    //             const weekKey = `Week ${weekNum}`;
+    //             if (!acc[weekKey]) {
+    //                 acc[weekKey] = { name: weekKey, [selectedPollutant]: 0, [selectedSecondPollutant]: 0 };
+    //             }
+    //             acc[weekKey][selectedPollutant] += Number(item[selectedPollutant] || 0);
+    //             acc[weekKey][selectedSecondPollutant] += Number(item[selectedSecondPollutant] || 0);
+    //             return acc;
+    //         }, {});
+    //     };
+    
+    //     const weeklyData = Object.values(groupDataByWeek(data));
+    
+    //     return (
+    //         <ResponsiveContainer width="100%" height={400}>
+    //             <AreaChart
+    //                 data={weeklyData}
+    //                 margin={{
+    //                     top: 10, right: 30, left: 0, bottom: 0,
+    //                 }}
+    //             >
+    //                 <CartesianGrid strokeDasharray="3 3" />
+    //                 <XAxis dataKey="name" />
+    //                 <YAxis />
+    //                 <Tooltip />
+    //                 <Area type="monotone" dataKey={selectedPollutant} stackId="1" stroke="#8884d8" fill="#8884d8" />
+    //                 <Area type="monotone" dataKey={selectedSecondPollutant} stackId="1" stroke="#82ca9d" fill="#82ca9d" />
+    //             </AreaChart>
+    //         </ResponsiveContainer>
+    //     );
+    // };
+   
+
 
 
     // function fetchDataAndConvertToJson() {
@@ -604,6 +726,8 @@ const Dashboardrecup = () => {
                 </div>
                 <div className=" bg-neutral-100 border-2 rounded-xl p-2 flex flex-col items-center justify-center    md col-span-2">
                     <h2 className="text-xl text-gray-600">objet8</h2>
+
+                    
                 </div>
                 
             </div>
