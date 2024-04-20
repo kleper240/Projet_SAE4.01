@@ -379,7 +379,7 @@ const Dashboardrecup = () => {
         }));
     
         return (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={dataToDisplay}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
@@ -411,10 +411,10 @@ const Dashboardrecup = () => {
         }));
     
         return (
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
-                    width={500}
-                    height={400}
+                    // width={500}
+                    // height={400}
                     data={dataToDisplay}
                     margin={{
                         top: 10,
@@ -705,8 +705,12 @@ const Dashboardrecup = () => {
                         <MyLineChart />
                     </div>
                 </div>
-                <div className=" bg-neutral-100 border-2 rounded-xl p-2 flex flex-col items-center justify-center  md col-span-2  ">
-                    <h2 className="text-xl text-gray-600">objet4</h2>
+                <div className=" bg-neutral-100 border-2 rounded-xl p-2   md col-span-2  ">
+                    <div className="border border-gray-300 h-full">
+                        <MyBiaxalBarChart />
+                    </div>
+
+                    
                 </div>
                 <div className=" bg-neutral-100 border-2 rounded-xl p-2     md col-span-2 row-span-2">
                     {/* <h2 className="text-xl text-gray-600">objet5</h2> */}
@@ -724,9 +728,10 @@ const Dashboardrecup = () => {
                 <div className=" bg-neutral-100 border-2 rounded-xl p-2 flex flex-col items-center justify-center    md  row-span-2">
                     <h2 className="text-xl text-gray-600">objet7</h2>
                 </div>
-                <div className=" bg-neutral-100 border-2 rounded-xl p-2 flex flex-col items-center justify-center    md col-span-2">
-                    <h2 className="text-xl text-gray-600">objet8</h2>
-
+                <div className=" bg-neutral-100 border-2 rounded-xl p-2     md col-span-2">
+                        <div className="border border-gray-300 h-full">
+                            <MyStackedAreaChart/>
+                        </div>
                     
                 </div>
                 
