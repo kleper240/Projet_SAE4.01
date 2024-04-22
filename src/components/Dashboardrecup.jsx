@@ -316,19 +316,13 @@ const Dashboardrecup = () => {
     
     
     
-
     const MyLineChart = () => {
         const filteredData = data.filter(item => item.Polluant === selectedPollutant && item['nom site'] === selectedSite);
         const filteredData2 = data2.filter(item => item.Polluant === selectedSecondPollutant && item['nom site'] === selectedSecondSite);
         const max = Math.max(getMaxValue(filteredData), getMaxValue(filteredData2)); // Get the maximum value from both sets of data
+    
         return (
-
-
-
-
             <ResponsiveContainer width="100%" height="100%">
-
-
                 <LineChart
                     data={filteredData}
                     margin={{
@@ -340,12 +334,15 @@ const Dashboardrecup = () => {
                     <YAxis domain={[0, max]} />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="valeur" stroke="#8884d8" />
-                    {isComparing && <Line type="monotone" dataKey="valeur" stroke="#82ca9d" data={filteredData2} />} {/* Add another line for the second set of data */}
+                    <Line type="monotone" dataKey="valeur" stroke="#8884d8" name={selectedPollutant} />
+                    {isComparing && (
+                        <Line type="monotone" dataKey="valeur" stroke="#82ca9d" name={selectedSecondPollutant} data={filteredData2} /> 
+                    )}
                 </LineChart>
             </ResponsiveContainer>
         );
     };
+    
 
     
 
@@ -390,9 +387,6 @@ const Dashboardrecup = () => {
     };
     
     
-    
-    
-
 
     const MyBarChart = () => {
         const filteredData = data.filter(item => item.Polluant === selectedPollutant && (item['nom site'] === selectedSite || item['nom site'] === selectedSecondSite));
