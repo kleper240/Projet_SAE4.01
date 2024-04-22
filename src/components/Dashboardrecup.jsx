@@ -1,22 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import DatePicker from 'react-datepicker';
-import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend,  AreaChart, BarChart, Area, Bar,RadarChart,Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis} from 'recharts';
+import { GrDocumentPdf } from "react-icons/gr";
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend,  AreaChart, BarChart, Area, Bar,RadarChart,Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,PieChart, Pie } from 'recharts';
 import 'react-datepicker/dist/react-datepicker.css';
 import { ResponsiveContainer } from 'recharts';
 import { ScatterChart, Scatter } from 'recharts';
-import { getMaxValue, transformData, formatDate, csvToJson } from './helpers';
+import { getMaxValue, transformData, formatDate, csvToJson, countDistinctPollutants, countNbLigne,countDistinctSites, countDistinctOrganismes} from './helpers';
 // import coord from './coord.csv';
 import {Cell} from 'recharts';
 import { PureComponent } from 'react';
 import {ComposedChart} from 'recharts';
 
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+
 
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { Button } from './ui/button';
+import MapComponent from './menu/MapComponent';
 
 
 
 const Dashboardrecup = () => {
+
+    const pdRef = useRef();
+
     const [data, setData] = useState([]);
     const [data2, setData2] = useState([]);
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -32,7 +41,65 @@ const Dashboardrecup = () => {
 
     const position = [48.8566, 2.3522]; // Coordonnées de Paris, France
 
-    const [selectedPollutant4, setSelectedPollutant4] = useState('');
+
+    const [isSwapped1, setIsSwapped1] = useState(true);
+    const [isSwapped2, setIsSwapped2] = useState(true);
+    const [isSwapped3, setIsSwapped3] = useState(true);
+
+    const [comparer, setComparer] = useState(true);
+
+
+
+    const convertToPDF = () => {
+        const input = pdRef.current;
+        html2canvas(input).then((canvas) => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4', true);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const imgWidth = canvas.width;
+            const imgHeight = canvas.height;
+            const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+            const imgX = (pdfWidth - imgWidth * ratio) / 2;
+            const imgY = 30;
+            pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+            pdf.save('invoice.pdf');
+    });
+    };
+
+    const handleDoubleClick = () => {
+        setIsSwapped1(!isSwapped1);
+    };
+    const handleDoubleClick2 = () => {
+        setIsSwapped2(!isSwapped2);
+    };
+    const handleDoubleClick3 = () => {
+        setIsSwapped3(!isSwapped3);
+    };
+
+    const [currentStatistic, setCurrentStatistic] = useState(0);
+    const statistics = [
+        { title: "Nombre de polluants:", count: countDistinctPollutants(data) - 1, color: "bg-teal-500" },
+        { title: "Nombre de mesures:", count: countNbLigne(data) - 1, color: "bg-blue-500" },
+        { title: "Nombre de sites:", count: countDistinctSites(data) - 1, color: "bg-pink-500" },
+        { title: "Nombre d'organismes:", count: countDistinctOrganismes(data) - 1, color: "bg-yellow-500" }
+    ];
+
+    const handleDoubleClick4 = () => {
+        setCurrentStatistic((currentStatistic + 1) % statistics.length);
+    };
+
+    const [currentStatistic2, setCurrentStatistic2] = useState(0);
+    const statistics2 = [
+        { title: "Nombre de polluants:", count: countDistinctPollutants(data2) - 1, color: "bg-teal-500" },
+        { title: "Nombre de mesures:", count: countNbLigne(data2) - 1, color: "bg-blue-500" },
+        { title: "Nombre de sites:", count: countDistinctSites(data2) - 1, color: "bg-pink-500" },
+        { title: "Nombre d'organismes:", count: countDistinctOrganismes(data2) - 1, color: "bg-yellow-500" }
+    ];
+
+    const handleDoubleClick5 = () => {
+        setCurrentStatistic2((currentStatistic2 + 1) % statistics2.length);
+    };
 
 
 
@@ -144,6 +211,10 @@ const Dashboardrecup = () => {
         setIsComparing(!isComparing);
     };
 
+    const toggle = () => {
+        setComparer(!comparer); 
+    }
+
     const renderSecondSection = () => {
         if (isComparing) {
             return (
@@ -187,6 +258,12 @@ const Dashboardrecup = () => {
                                 <option key={site} value={site}>{site}</option>
                             ))}
                         </select>
+                    </div>
+
+                    <div className='w-30 mt-4 md:mt-0 pl-3'>
+                        <button onClick={toggle} className="w-full ml-auto  px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600">
+                            {comparer ? 'Graph 2 ' : 'Graph 1'}
+                        </button>
                     </div>
                 </div>
             );
@@ -244,8 +321,9 @@ const Dashboardrecup = () => {
         const filteredData = data.filter(item => item.Polluant === selectedPollutant && item['nom site'] === selectedSite);
         const filteredData2 = data2.filter(item => item.Polluant === selectedSecondPollutant && item['nom site'] === selectedSecondSite);
         const max = Math.max(getMaxValue(filteredData), getMaxValue(filteredData2)); // Get the maximum value from both sets of data
-        // console.log(max)
         return (
+
+
 
 
             <ResponsiveContainer width="100%" height="100%">
@@ -272,62 +350,28 @@ const Dashboardrecup = () => {
     
 
     const MyRadar = () => {
-        const filteredData = data.filter(item => item.Polluant === 'NO' && item['nom site'] === selectedSite);
-        const filteredData2 = data.filter(item => item.Polluant === 'NO2' && item['nom site'] === selectedSite);
-        const filteredData3 = data.filter(item => item.Polluant === 'NOX as NO2' && item['nom site'] === selectedSite);
-        const filteredData4 = data.filter(item => item.Polluant === 'PM2.5' && item['nom site'] === selectedSite);
-        const filteredData5 = data.filter(item => item.Polluant === 'O3' && item['nom site'] === selectedSite);
-        const filteredData6 = data.filter(item => item.Polluant === 'PM10' && item['nom site'] === selectedSite);
-    
-        const filteredData7 = data2.filter(item => item.Polluant === 'NO' && item['nom site'] === selectedSecondSite);
-        const filteredData8 = data2.filter(item => item.Polluant === 'NO2' && item['nom site'] === selectedSecondSite);
-        const filteredData9 = data2.filter(item => item.Polluant === 'NOX as NO2' && item['nom site'] === selectedSecondSite);
-        const filteredData10 = data2.filter(item => item.Polluant === 'PM2.5' && item['nom site'] === selectedSecondSite);
-        const filteredData11 = data2.filter(item => item.Polluant === 'O3' && item['nom site'] === selectedSecondSite);
-        const filteredData12 = data2.filter(item => item.Polluant === 'PM10' && item['nom site'] === selectedSecondSite);
+        const filteredData = data.filter(item => item['nom site'] === selectedSite);
+        const filteredData2 = data2.filter(item => item['nom site'] === selectedSecondSite);
     
         const radarData = [
-            {
-                subject: 'NO',
-                A: Math.max(getMaxValue(filteredData)),
-                B: Math.max(getMaxValue(filteredData7)),
+            'NO', 'NO2', 'NOX as NO2', 'PM2.5', 'O3', 'PM10'
+        ].map(subject => {
+            const maxValueA = Math.max(
+                getMaxValue(filteredData.filter(item => item.Polluant === subject)),
+                -Infinity
+            );
+            const maxValueB = Math.max(
+                getMaxValue(filteredData2.filter(item => item.Polluant === subject)),
+                -Infinity
+            );
+    
+            return {
+                subject,
+                A: maxValueA === -Infinity ? 0 : maxValueA,
+                B: maxValueB === -Infinity ? 0 : maxValueB,
                 fullMark: 150,
-            },
-            {
-                subject: 'NO2',
-                A: Math.max(getMaxValue(filteredData2)),
-                B: Math.max(getMaxValue(filteredData8)),
-                fullMark: 150,
-            },
-            {
-                subject: 'NOX as NO2',
-                A: Math.max(getMaxValue(filteredData3)),
-                B: Math.max(getMaxValue(filteredData9)),
-                fullMark: 150,
-            },
-            {
-                subject: 'PM2.5',
-                A: Math.max(getMaxValue(filteredData4)),
-                B: Math.max(getMaxValue(filteredData10)),
-                fullMark: 150,
-            },
-            {
-                subject: 'O3',
-                A: Math.max(getMaxValue(filteredData5)),
-                B: Math.max(getMaxValue(filteredData11)),
-                fullMark: 150,
-            },
-            {
-                subject: 'PM10',
-                A: Math.max(getMaxValue(filteredData6)),
-                B: Math.max(getMaxValue(filteredData12)),
-                fullMark: 150,
-            },
-        ].map(item => ({
-            ...item,
-            A: item.A === -Infinity ? 0 : item.A,
-            B: item.B === -Infinity ? 0 : item.B,
-        }));
+            };
+        });
     
         console.log(radarData);
     
@@ -344,6 +388,7 @@ const Dashboardrecup = () => {
             </ResponsiveContainer>
         );
     };
+    
     
     
     
@@ -394,10 +439,6 @@ const Dashboardrecup = () => {
         );
     };
     
-
-    
-    
-
     const MyStackedAreaChart = () => {
         // Filtrer les données pour le premier polluant sélectionné et le site sélectionné
         const filteredData = data.filter(item => item.Polluant === selectedPollutant && item['nom site'] === selectedSite);
@@ -413,8 +454,7 @@ const Dashboardrecup = () => {
         return (
             <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
-                    // width={500}
-                    // height={400}
+                    
                     data={dataToDisplay}
                     margin={{
                         top: 10,
@@ -427,62 +467,117 @@ const Dashboardrecup = () => {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
-                    <Area type="monotone" dataKey={selectedPollutant} stackId="1" stroke="#8884d8" fill="#8884d8" />
-                    <Area type="monotone" dataKey={selectedSecondPollutant} stackId="1" stroke="#82ca9d" fill="#82ca9d" />
+                    <Area type="monotone"   dataKey={selectedPollutant} stackId="1" stroke="#8884d8" fill="#8884d8" />
+                    <Area type="monotone"  dataKey={selectedSecondPollutant} stackId="1" stroke="#82ca9d" fill="#82ca9d" />
                 </AreaChart>
             </ResponsiveContainer>
         );
     };
-    
+    const onChange = date => {
+        setSelectedDate(date);
+        handleFetchData(); // Assurez-vous de définir cette fonction pour mettre à jour les données lorsque la date est modifiée
+    };
+    const onChange2 = date2 => {
+        setSelectedSecondDate(date2);
+        handleFetchData(); // Assurez-vous de définir cette fonction pour mettre à jour les données lorsque la date est modifiée
+    };
 
-    // const MyStackedAreaChart = ({ data, selectedPollutant, selectedSecondPollutant }) => {
-    //     if (!data || data.length === 0) {
-    //         return <p>Data is loading...</p>; // Display a loading message or a spinner
-    //     }
+
     
-    //     // Helper function to parse week number
-    //     const getWeekNumber = (date) => {
-    //         const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
-    //         const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
-    //         return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
-    //     };
-    
-    //     // Function to group data by weeks
-    //     const groupDataByWeek = (data) => {
-    //         return data.reduce((acc, item) => {
-    //             const date = new Date(item['Date de début']);
-    //             const weekNum = getWeekNumber(date);
-    //             const weekKey = `Week ${weekNum}`;
-    //             if (!acc[weekKey]) {
-    //                 acc[weekKey] = { name: weekKey, [selectedPollutant]: 0, [selectedSecondPollutant]: 0 };
-    //             }
-    //             acc[weekKey][selectedPollutant] += Number(item[selectedPollutant] || 0);
-    //             acc[weekKey][selectedSecondPollutant] += Number(item[selectedSecondPollutant] || 0);
-    //             return acc;
-    //         }, {});
-    //     };
-    
-    //     const weeklyData = Object.values(groupDataByWeek(data));
-    
-    //     return (
-    //         <ResponsiveContainer width="100%" height={400}>
-    //             <AreaChart
-    //                 data={weeklyData}
-    //                 margin={{
-    //                     top: 10, right: 30, left: 0, bottom: 0,
-    //                 }}
-    //             >
-    //                 <CartesianGrid strokeDasharray="3 3" />
-    //                 <XAxis dataKey="name" />
-    //                 <YAxis />
-    //                 <Tooltip />
-    //                 <Area type="monotone" dataKey={selectedPollutant} stackId="1" stroke="#8884d8" fill="#8884d8" />
-    //                 <Area type="monotone" dataKey={selectedSecondPollutant} stackId="1" stroke="#82ca9d" fill="#82ca9d" />
-    //             </AreaChart>
-    //         </ResponsiveContainer>
-    //     );
-    // };
    
+    const MyPieChart = () => {
+        const transformedData = transformData(data);
+        const selectedSitesData = transformedData.filter(item => item['nom site'] === selectedSite);
+      
+        // Obtenir la liste des polluants triés par ordre décroissant des valeurs totales
+        const polluantsTotaux = {};
+        selectedSitesData.forEach(item => {
+          Object.entries(item).forEach(([pollutant, value]) => {
+            if (pollutant !== 'nom site') {
+              polluantsTotaux[pollutant] = (polluantsTotaux[pollutant] || 0) + value;
+            }
+          });
+        });
+        const polluantsTries = Object.entries(polluantsTotaux).sort((a, b) => b[1] - a[1]).map(([pollutant]) => pollutant);
+      
+        const pieChartData = polluantsTries.map(polluant => {
+          const total = selectedSitesData.reduce((acc, item) => acc + parseFloat(item[polluant]), 0);
+          return { name: polluant, value: total };
+      });
+      
+        return (
+          <ResponsiveContainer width="100%" height="90%">
+            <PieChart>
+              <Pie
+                data={pieChartData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, value }) => `${name}:${parseFloat(value).toFixed(1)}`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {pieChartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+            </PieChart>
+            <Tooltip />
+                  <Legend />
+          </ResponsiveContainer>
+        );
+    };
+
+      
+
+
+    const MyPieChart2 = () => {
+        const transformedData = transformData(data);
+        const selectedSitesData = transformedData.filter(item => item['nom site'] === selectedSecondSite);
+      
+        // Obtenir la liste des polluants triés par ordre décroissant des valeurs totales
+        const polluantsTotaux = {};
+        selectedSitesData.forEach(item => {
+          Object.entries(item).forEach(([pollutant, value]) => {
+            if (pollutant !== 'nom site') {
+              polluantsTotaux[pollutant] = (polluantsTotaux[pollutant] || 0) + value;
+            }
+          });
+        });
+        const polluantsTries = Object.entries(polluantsTotaux).sort((a, b) => b[1] - a[1]).map(([pollutant]) => pollutant);
+      
+        const pieChartData = polluantsTries.map(polluant => {
+          const total = selectedSitesData.reduce((acc, item) => acc + parseFloat(item[polluant]), 0);
+          return { name: polluant, value: total };
+      });
+      
+        return (
+          <ResponsiveContainer width="100%" height="90%">
+            <PieChart>
+              <Pie
+                data={pieChartData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, value }) => `${name}:${parseFloat(value).toFixed(1)}`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {pieChartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+            </PieChart>
+            <Tooltip />
+                  <Legend />
+          </ResponsiveContainer>
+        );
+    };
+      
+
+    
 
 
 
@@ -565,68 +660,8 @@ const Dashboardrecup = () => {
     return (
 
         <>
-        <div className="container mx-auto mt-8">
-
-
-
-
-            <div className="grid grid-cols-2 gap-4">
-
-
-                <div className="border p-4">
-                    <h2 className="text-lg font-semibold mb-4">Line chart</h2>
-                    <div className="border border-gray-300 h-52">
-                        <MyLineChart />
-                    </div>
-                </div>
-
-                <div className="border p-4">
-                    <h2 className="text-lg font-semibold mb-4">Diagramme de dispertion</h2>
-                    <div className="border border-gray-300 h-32">
-                        <MyScatterChart />
-                    </div>
-                </div>
-
-                <div className="border p-4">
-                    <h2 className="text-lg font-semibold mb-4">Line chart</h2>
-                    <div className="border border-gray-300 h-52">
-                        <MyBarChart />
-                    </div>
-                </div>
-
-                <div className="border p-4">
-                    <h2 className="text-lg font-semibold mb-4">Line chart</h2>
-                    <div className="border border-gray-300 h-62">
-                        <MyRadar/>
-                    </div>
-                </div>
-
-
-
-
-
-
-
-                {/* <div className="border p-4">
-                            <select 
-                                value={selectedPollutant4}
-                                onChange={(e) => setSelectedPollutant4(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500">
-                                <option value="">Sélectionnez un polluant</option>
-                                {pollutants.map(pollutant => (
-                                    <option key={pollutant} value={pollutant}>{pollutant}</option>
-                                ))}
-                            </select>
-                            <MyMap />
-                </div> */}
-
-            </div>
-
-
-        </div>
-
-
-        <div className="max-w-7xl mx-auto">
+    
+        <div className="max-w-7xl mx-auto" ref= {pdRef}>
             <div className="grid md:grid-cols-4 auto-rows-[140px] gap-3 my-10">
 
                 <div className =" bg-neutral-100 border-2 rounded-xl p-2  md col-span-4 row-span-1">
@@ -684,6 +719,12 @@ const Dashboardrecup = () => {
 
                                         </div>
 
+                                        <div className="w-30 mt-4 md:mt-0 pl-3">
+                                            {/* <button className="w-full ml-auto  px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:bg-blue-600" onClick={convertToPDF}>Convertir en PDF</button> */}
+                                            <p>save</p>
+                                            <GrDocumentPdf className='bg-white text-2xl rounded cursor-pointer ' onClick={convertToPDF}/>
+                                        </div>
+
                                 </>
                             )}
                     </div>
@@ -694,46 +735,62 @@ const Dashboardrecup = () => {
 
 
                 </div>
-                <div className =" bg-neutral-100 border-2 rounded-xl p-2 flex flex-col items-center justify-center w-20px ">
-                    <h2 className="text-xl text-gray-600">objet1</h2>
+
+                <div className ={`${statistics[currentStatistic].color} border-2 rounded-xl p-2  ${!isSwapped2? "hidden": "col-span-1"} `} onDoubleClick={handleDoubleClick4}>
+                    {/* <div className={`${statistics[currentStatistic].color} rounded-lg shadow-md p-4`}> */}
+                        <h2 className="text-lg font-semibold mb-2 text-white">{statistics[currentStatistic].title}</h2>
+                        <p className="text-2xl font-bold text-white">{statistics[currentStatistic].count}</p>
+                    {/* </div> */}
                 </div>
-                <div className =" bg-neutral-100 border-2 rounded-xl p-2 flex flex-col items-center justify-center  ">
-                    <h2 className="text-xl text-gray-600">objet2</h2>
+
+                <div className ={`${statistics2[currentStatistic2].color} border-2 rounded-xl p-2  ${!isSwapped2? "hidden": "col-span-1"} `} onDoubleClick={handleDoubleClick5}>
+                        <h2 className="text-lg font-semibold mb-2 text-white">{statistics2[currentStatistic2].title}</h2>
+                        <p className="text-2xl font-bold text-white">{statistics2[currentStatistic2].count}</p>
                 </div>
-                <div className=" bg-neutral-100 border-2 rounded-xl p-2     md col-span-2 ">
+
+                <div className={`bg-neutral-100 border-2 rounded-xl p-2  ${isSwapped1 ? 'md col-span-2' : 'col-span-2 row-span-2'}`} onDoubleClick={handleDoubleClick}>
                     <div className="border border-gray-300 h-full">
                         <MyLineChart />
                     </div>
                 </div>
-                <div className=" bg-neutral-100 border-2 rounded-xl p-2   md col-span-2  ">
+
+                <div className={`bg-neutral-100 border-2 rounded-xl p-2  md ${isSwapped2?'col-span-2': "col-span-2 row-span-2"}`} onDoubleClick={handleDoubleClick2}>
                     <div className="border border-gray-300 h-full">
                         <MyBiaxalBarChart />
                     </div>
 
                     
                 </div>
-                <div className=" bg-neutral-100 border-2 rounded-xl p-2     md col-span-2 row-span-2">
-                    {/* <h2 className="text-xl text-gray-600">objet5</h2> */}
+
+                <div className={`bg-neutral-100 border-2 rounded-xl p-2  ${!isSwapped1 ? 'md col-span-2 ' : 'col-span-2 row-span-2'} `} onDoubleClick={ handleDoubleClick}>
                     <div className="border border-gray-300 h-full">
-                        <MyLineChart />
+                        <MapComponent/>
                     </div>
 
                 </div>
+
                 <div className=" bg-neutral-100 border-2 rounded-xl p-2     md  row-span-2">
                     {/* <h2 className="text-xl text-gray-600">objet6</h2> */}
                     <div className="border border-gray-300 h-full">
                         <MyRadar/>
                     </div>
                 </div>
-                <div className=" bg-neutral-100 border-2 rounded-xl p-2 flex flex-col items-center justify-center    md  row-span-2">
-                    <h2 className="text-xl text-gray-600">objet7</h2>
+
+                <div className=" bg-neutral-100 border-2 rounded-xl p-2   md  row-span-2">
+                    <div className="border border-gray-300 h-full">
+                            {comparer?  <MyPieChart/> : <MyPieChart2/>}
+                    </div>
                 </div>
-                <div className=" bg-neutral-100 border-2 rounded-xl p-2     md col-span-2">
+
+                
+
+                <div className={`bg-neutral-100 border-2 rounded-xl p-2 r md ${isSwapped3?"col-span-2": "col-span-2 row-span-2"}`} onDoubleClick={handleDoubleClick3}>
                         <div className="border border-gray-300 h-full">
                             <MyStackedAreaChart/>
                         </div>
                     
                 </div>
+
                 
             </div>
         </div>

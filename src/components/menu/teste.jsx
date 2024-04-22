@@ -459,6 +459,12 @@ const onChange = date => {
         setSelectedDate(date);
         handleFetchData(); // Assurez-vous de définir cette fonction pour mettre à jour les données lorsque la date est modifiée
     };
+const onChange2 = date => {
+        setSelectedSecondDate(date);
+        handleFetchData(); // Assurez-vous de définir cette fonction pour mettre à jour les données lorsque la date est modifiée
+    };
+
+
 
 
 
