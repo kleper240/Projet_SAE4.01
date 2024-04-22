@@ -9,6 +9,9 @@ import { Maps } from './components/menu/Maps';
 import Dashboardrecup from './components/Dashboardrecup';
 
 
+import Teste from './components/teste';
+
+
 
 
 
@@ -53,7 +56,7 @@ function App() {
         {/* <Cssgrid/> */}
 
         <Dashboardrecup/>
-
+        {/* <Teste/> */}
 
 
 

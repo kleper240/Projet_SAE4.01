@@ -9,7 +9,8 @@ var vite_config_default = defineConfig({
     alias: {
       "@": path.resolve(__vite_injected_original_dirname, "./src")
     }
-  }
+  },
+  assetsInclude: ["**/*.csv"]
 });
 
 
